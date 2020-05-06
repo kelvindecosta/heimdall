@@ -1,5 +1,4 @@
 import os
-import pandas
 import numpy as np
 import torch
 
@@ -78,14 +77,14 @@ def preprocess():
             (dataset_directory / "tiles" / subdir).mkdir(parents=True, exist_ok=True)
 
         # Create tiles for each scene image & mask
-        index_data = pandas.read_csv(
-            f"{dataset_directory.as_posix()}/index.csv", delimiter=" "
-        )
+        with open(f"{dataset_directory.as_posix()}/index.csv", "r") as fd:
+            lines = fd.read().strip().split("\n")
 
-        for scene_id in index_data.name:
+        for line in lines:
+            scene_id = line.split(" ")[1]
             sample_set = get_sample_set(scene_id)
 
-            if sample_set == "test":
+            if sample_set in ["test", None]:
                 continue
 
             create_tiles(dataset_directory, scene_id, sample_set)

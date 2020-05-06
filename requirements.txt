@@ -3,4 +3,3 @@ torchvision
 pillow
 opencv-python
 numpy
-pandas
