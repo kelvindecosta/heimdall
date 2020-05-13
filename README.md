@@ -1,25 +1,39 @@
 # Heimdall
 
-Semantic Segmentation on Orthographic Drone Imagery for Disaster Management
+Semantic Segmentation on Orthographic Drone Imagery for Disaster Management.
 
 ## Instructions
 
-Clone this repository
+### Setup
 
-```bash
-git clone https://github.com/kelvindecosta/heimdall.git && cd heimdall
-```
+- Clone this repository.
 
-Install dependencies
+  ```bash
+  git clone https://github.com/kelvindecosta/heimdall.git && cd heimdall
+  ```
 
-```bash
-pip install -r requirements.txt
-```
+- Install dependencies.
 
-Run pipeline
+  ```bash
+  pip install -r requirements.txt
+  ```
 
-```bash
-python main.py
-```
+### Data
 
-> Refer to [`lib/config.py`](lib/config.py) for advanced configuration.
+- Download and extract the [Drone Deploy Segmentation Dataset](https://github.com/dronedeploy/dd-ml-segmentation-benchmark).
+
+  ```bash
+  python main.py download
+  ```
+
+  > This command downloads one of two datasets.
+  > See [lib.config.data](lib/config/data.py) to change dataset `CHOICE`.
+
+- Preprocess the extracted dataset.
+
+  ```bash
+  python main.py preprocess
+  ```
+
+  > This command preprocesses the dataset specified by `CHOICE`.
+  > Tiles of size `INPUT_SIZE` are created from the larger images and labels.
