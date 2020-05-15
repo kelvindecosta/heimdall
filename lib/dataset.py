@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from lib.utils import tile, mask
 
-from lib.config.data import CHOICE, URLS, IGNORE_COLOR, LABEL_COLORS
+from lib.config.data import DATASET_CHOICE, URLS, IGNORE_COLOR, LABEL_COLORS
 from lib.config.device import DEVICE
 from lib.config.model import INPUT_SIZE
 
@@ -21,31 +21,31 @@ def download():
     """
 
     # Check if choice is valid
-    if CHOICE not in URLS:
-        print(f"Invalid choice '{CHOICE}'.")
+    if DATASET_CHOICE not in URLS:
+        print(f"Invalid choice '{DATASET_CHOICE}'.")
         exit(1)
 
     # Download the archive file, if it isn't downloaded already
-    filename = Path(f"downloads/{CHOICE}.tar.gz")
+    filename = Path(f"downloads/{DATASET_CHOICE}.tar.gz")
     filename.parent.mkdir(parents=True, exist_ok=True)
 
     if filename.exists():
         print(
-            f"Archive file of dataset '{CHOICE}' already exists ('{filename.as_posix()}')."
+            f"Archive file of dataset '{DATASET_CHOICE}' already exists ('{filename.as_posix()}')."
         )
     else:
-        print(f"Downloading archive file of dataset '{CHOICE}'")
-        os.system(f"curl '{URLS[CHOICE]}' -o {filename.as_posix()}")
+        print(f"Downloading archive file of dataset '{DATASET_CHOICE}'")
+        os.system(f"curl '{URLS[DATASET_CHOICE]}' -o {filename.as_posix()}")
 
     # Extract the archive file, if it isn't extracted already
-    dataset_directory = Path(f"data/{CHOICE}")
+    dataset_directory = Path(f"data/{DATASET_CHOICE}")
 
     if dataset_directory.exists():
         print(
-            f"Extracted dataset '{CHOICE}' already exists ('{dataset_directory.as_posix()}')."
+            f"Extracted dataset '{DATASET_CHOICE}' already exists ('{dataset_directory.as_posix()}')."
         )
     else:
-        print(f"Extracting dataset '{CHOICE}'...")
+        print(f"Extracting dataset '{DATASET_CHOICE}'...")
         dataset_directory.mkdir(parents=True, exist_ok=True)
         os.system(
             f"tar -xf {filename.as_posix()} -C {dataset_directory.as_posix()} --strip-components 1"
@@ -57,15 +57,17 @@ def preprocess():
     Preprocesses the dataset by tiling images and labels.
     """
 
-    dataset_directory = Path(f"data/{CHOICE}")
+    dataset_directory = Path(f"data/{DATASET_CHOICE}")
     tiles_directory = dataset_directory / "tiles" / f"x{INPUT_SIZE}"
 
     # Break image & labels into smaller tiles for training
     if tiles_directory.exists():
-        print(f"Tiles for dataset '{CHOICE}' for size '{INPUT_SIZE}' already exist.")
+        print(
+            f"Tiles for dataset '{DATASET_CHOICE}' for size '{INPUT_SIZE}' already exist."
+        )
         return
 
-    print(f"Creating tiles for dataset '{CHOICE}'")
+    print(f"Creating tiles for dataset '{DATASET_CHOICE}'")
 
     # Creating required directories
     (tiles_directory / "split").mkdir(parents=True, exist_ok=True)
@@ -137,7 +139,7 @@ class DroneDeploySegmentationDataset(Dataset):
             sample_set {str} -- sample set in split ("train", "valid")
             transforms {torchvision.transforms.Conpose} -- composed list of transforms
         """
-        self.directory = Path(f"data/{CHOICE}/tiles/x{INPUT_SIZE}")
+        self.directory = Path(f"data/{DATASET_CHOICE}/tiles/x{INPUT_SIZE}")
         self.transforms = transforms
 
         # Store list of tile filenames

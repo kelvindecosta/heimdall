@@ -3,7 +3,7 @@ import torch
 from lib.config.device import DEVICE
 
 # Choice of datasets
-CHOICE = "sample"
+DATASET_CHOICE = "sample"
 
 # URLs for dataset downloads
 URLS = {

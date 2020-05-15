@@ -27,7 +27,7 @@ Semantic Segmentation on Orthographic Drone Imagery for Disaster Management.
   ```
 
   > This command downloads one of two datasets.
-  > See [lib.config.data](lib/config/data.py) to change dataset `CHOICE`.
+  > See [lib.config.data](lib/config/data.py) to change dataset `DATASET_CHOICE`.
 
 - Preprocess the extracted dataset.
 
@@ -35,5 +35,5 @@ Semantic Segmentation on Orthographic Drone Imagery for Disaster Management.
   python main.py preprocess
   ```
 
-  > This command preprocesses the dataset specified by `CHOICE`.
+  > This command preprocesses the dataset specified by `DATASET_CHOICE`.
   > Tiles of size `INPUT_SIZE` are created from the larger images and labels.
