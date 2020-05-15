@@ -15,7 +15,7 @@ URLS = {
 LABEL_NAMES = ["BUILDING", "CLUTTER", "VEGETATION", "WATER", "GROUND", "CAR"]
 
 # Color of pixels to ignore
-IGNORE_COLOR = torch.tensor([255, 0, 255]).to(DEVICE)
+IGNORE_COLOR = torch.tensor([255, 0, 255], dtype=torch.uint8).to(DEVICE)
 
 # Color of pixels for the classes
 LABEL_COLORS = torch.tensor(
@@ -26,5 +26,6 @@ LABEL_COLORS = torch.tensor(
         [245, 130, 48],
         [255, 255, 255],
         [0, 130, 200],
-    ]
+    ],
+    dtype=torch.uint8,
 ).to(DEVICE)
