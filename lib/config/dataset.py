@@ -42,7 +42,6 @@ AUGMENTATION_TRANSFORMS = T.Compose(
         T.RandomAffine(
             30, translate=None, scale=None, shear=None, resample=False, fillcolor=0
         ),
-        T.ColorJitter(brightness=0.5, contrast=0.5, saturation=0, hue=0),
     ]
 )
 PREPROCESSING_TRANSFORMS = T.Compose(
