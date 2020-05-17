@@ -45,7 +45,7 @@ def run(image, model):
     prediction = make_grid(prediction, nrow=image_test_case.ncols, padding=0)
 
     # Write to file
-    run_id = model_path.stem[: -len("-model.pth") + 1]
+    run_id = model_path.stem[: -len("-model")]
     output_path = Path("predictions") / f"{run_id}.png"
     output_path.parent.mkdir(parents=True, exist_ok=True)
     Image.fromarray(prediction.permute(1, 2, 0).numpy()).save(output_path.as_posix())

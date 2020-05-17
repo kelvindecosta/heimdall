@@ -43,7 +43,7 @@ def run(architecture, backbone, save_metric, model_path):
         )
         run_id = f"{TIMESTAMP}-{architecture}-{backbone}"
     else:
-        run_id = model_path.stem[: -len("-model.pth") + 1]
+        run_id = model_path.stem[: -len("-model")]
         model = torch.load(model_path)
 
     # Setup custom logging
