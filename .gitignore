@@ -1,6 +1,10 @@
-# Data
+# Generated Files
 data/
 downloads/
+weights/
+runs/
+predictions/
+logs/
 
 # Jupyter
 .ipynb_checkpoints
