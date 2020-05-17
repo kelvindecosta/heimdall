@@ -30,3 +30,11 @@ BATCH_SIZE = 4
 OPTIMIZER = torch.optim.Adam
 LEARNING_RATE = 0.0001
 EPOCHS = 30
+
+
+class PolyLR(torch.optim.lr_scheduler.LambdaLR):
+    def __init__(self, optimizer, epochs):
+        super().__init__(optimizer, lambda epoch: (1 - (epoch / epochs) ** 0.9))
+
+
+SCHEDULER = PolyLR

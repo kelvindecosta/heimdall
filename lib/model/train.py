@@ -17,6 +17,7 @@ from lib.config.model import (
     OPTIMIZER,
     LEARNING_RATE,
     EPOCHS,
+    SCHEDULER,
 )
 from lib.config.dataset import LABEL_COLORS
 from lib.config.session import DEVICE, TIMESTAMP
@@ -66,6 +67,7 @@ def run(architecture, backbone, save_metric, model_path):
     # Set loss and optimizer
     loss = smp.utils.losses.DiceLoss()
     optimizer = OPTIMIZER(params=model.parameters(), lr=LEARNING_RATE)
+    scheduler = SCHEDULER(optimizer=optimizer, epochs=EPOCHS)
 
     # Set train and valid epoch execution
     execution = {
@@ -94,6 +96,7 @@ def run(architecture, backbone, save_metric, model_path):
 
         for phase in ["train", "valid"]:
             logs = execution[phase].run(data_loaders[phase])
+
             for scalar in logs:
                 writer.add_scalar(f"{phase} {scalar}", logs[scalar], epoch + 1)
 
@@ -108,3 +111,5 @@ def run(architecture, backbone, save_metric, model_path):
                 log_data["epoch"] = epoch
                 with open(log_file.as_posix(), "w") as fd:
                     json.dump(log_data, fd, indent=2)
+
+        scheduler.step()
