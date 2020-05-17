@@ -50,6 +50,7 @@ def run(architecture, backbone, criterion, save_metric, model_path):
     # Setup custom logging
     log_data = {}
     log_file = Path("logs") / f"{run_id}.json"
+    log_file.parent.mkdir(parents=True, exist_ok=True)
     start_epoch = 0
     if log_file.exists():
         with open(log_file.as_posix(), "r") as fd:
