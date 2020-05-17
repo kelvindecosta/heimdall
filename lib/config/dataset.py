@@ -1,6 +1,8 @@
 import torch
 
-from lib.config.device import DEVICE
+from torchvision import transforms as T
+
+from lib.config.session import DEVICE
 
 # Choice of datasets
 DATASET_CHOICE = "sample"
@@ -29,3 +31,20 @@ LABEL_COLORS = torch.tensor(
     ],
     dtype=torch.uint8,
 ).to(DEVICE)
+
+# Image Size
+IMAGE_SIZE = 224
+
+# Transformations
+AUGMENTATION_TRANSFORMS = T.Compose(
+    [
+        T.RandomHorizontalFlip(),
+        T.RandomAffine(
+            30, translate=None, scale=None, shear=None, resample=False, fillcolor=0
+        ),
+        T.ColorJitter(brightness=0.5, contrast=0.5, saturation=0, hue=0),
+    ]
+)
+PREPROCESSING_TRANSFORMS = T.Compose(
+    [T.ToTensor(), T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])]
+)
