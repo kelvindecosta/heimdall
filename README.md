@@ -27,13 +27,42 @@ Semantic Segmentation on Orthographic Drone Imagery for Disaster Management.
   ```
 
   > This command downloads one of two datasets.
-  > See [lib.config.data](lib/config/data.py) to change dataset `DATASET_CHOICE`.
+  > See [lib.config.dataset](lib/config/dataset.py) to change dataset `DATASET_CHOICE`.
 
-- Preprocess the extracted dataset.
+- Index the dataset.
 
   ```bash
-  python main.py preprocess
+  python scripts/dataset.py
+  ```
+
+- Create small tiles from the large images and labels in the dataset.
+
+  ```bash
+  python main.py tile
   ```
 
   > This command preprocesses the dataset specified by `DATASET_CHOICE`.
-  > Tiles of size `INPUT_SIZE` are created from the larger images and labels.
+  > Tiles of size `IMAGE_SIZE` are created from the larger images and labels.
+  >
+  > `INORE_COLOR` represents the `RGB` values for the unlabelled pixels in the dataset.
+  > Label tiles that have this color present are ignore (so are their corresponding images).
+
+### Train
+
+Train a model.
+
+```bash
+python main.py train
+```
+
+> Run `python main.py train -h` for more options
+
+### Predict
+
+Predict the segmentation mask for an image.
+
+```bash
+python main.py predict <path_to_image> <path_to_model>
+```
+
+> Run `python main.py predict -h` for more options
