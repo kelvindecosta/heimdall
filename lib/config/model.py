@@ -16,12 +16,6 @@ ACTIVATION = "softmax"
 # Dataset on which weights were obtained
 WEIGHTS = "imagenet"
 
-# Choice of loss function
-LOSSES = {
-    "dice": smp.utils.losses.DiceLoss,
-    "cross-entropy": smp.utils.losses.CrossEntropyLoss,
-}
-
 # Metrics to be tracked
 METRICS = [
     smp.utils.metrics.IoU(),

@@ -3,7 +3,7 @@ import argparse
 from lib import dataset
 from lib import model
 
-from lib.config.model import BACKBONES, LOSSES, MODELS, METRICS
+from lib.config.model import BACKBONES, MODELS, METRICS
 
 
 def parse():
@@ -40,15 +40,6 @@ def parse():
         choices=backbones,
         help="choice of pretrained backbone",
         default="resnet101",
-    )
-
-    losses = sorted(list(LOSSES.keys()))
-    p_train.add_argument(
-        "-c",
-        "--criterion",
-        choices=losses,
-        help="choice of loss function",
-        default="dice",
     )
 
     metrics = sorted(list(x.__name__ for x in METRICS))

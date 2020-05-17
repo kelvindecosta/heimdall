@@ -12,7 +12,6 @@ from lib.config.model import (
     MODELS,
     ACTIVATION,
     WEIGHTS,
-    LOSSES,
     METRICS,
     BATCH_SIZE,
     OPTIMIZER,
@@ -23,7 +22,7 @@ from lib.config.dataset import LABEL_COLORS
 from lib.config.session import DEVICE, TIMESTAMP
 
 
-def run(architecture, backbone, criterion, save_metric, model_path):
+def run(architecture, backbone, save_metric, model_path):
 
     # Create data loaders
     data_loaders = {
@@ -42,7 +41,7 @@ def run(architecture, backbone, criterion, save_metric, model_path):
             classes=len(LABEL_COLORS),
             activation=ACTIVATION,
         )
-        run_id = f"{TIMESTAMP}-{architecture}-{backbone}-{criterion}"
+        run_id = f"{TIMESTAMP}-{architecture}-{backbone}"
     else:
         run_id = model_path.stem[: -len("-model.pth") + 1]
         model = torch.load(model_path)
@@ -60,13 +59,12 @@ def run(architecture, backbone, criterion, save_metric, model_path):
         log_data = {
             "architecture": architecture,
             "backbone": backbone,
-            "criterion": criterion,
             "save_metric": save_metric,
             "batch_size": BATCH_SIZE,
         }
 
     # Set loss and optimizer
-    loss = LOSSES.get(criterion)()
+    loss = smp.utils.losses.DiceLoss()
     optimizer = OPTIMIZER(params=model.parameters(), lr=LEARNING_RATE)
 
     # Set train and valid epoch execution
