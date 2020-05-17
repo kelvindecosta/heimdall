@@ -28,7 +28,7 @@ def run(architecture, backbone, criterion, save_metric, model_path):
     # Create data loaders
     data_loaders = {
         "train": DataLoader(Dataset("train"), batch_size=BATCH_SIZE, shuffle=True),
-        "valid": DataLoader(Dataset("valid"), batch_size=BATCH_SIZE * 4, shuffle=False),
+        "valid": DataLoader(Dataset("valid"), batch_size=BATCH_SIZE, shuffle=False),
     }
 
     # Set model
