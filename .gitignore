@@ -1,13 +1,13 @@
 # Generated Files
 data/
 downloads/
-weights/
 runs/
-predictions/
-logs/
 
 # Jupyter
 .ipynb_checkpoints
 
 # Python
 __pycache__
+
+# Config
+config.yml
