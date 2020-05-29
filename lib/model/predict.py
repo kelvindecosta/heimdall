@@ -1,51 +1,54 @@
 import torch
 
+from pathlib import Path
+from PIL import Image
 from torch.utils.data import DataLoader
 from torchvision.utils import make_grid
-from PIL import Image
-from pathlib import Path
 from tqdm import tqdm
 
-from lib.dataset import DroneDeploySegmentationTestCase as TestCase
+from lib.dataset import DroneDeploySegmentationDataset as Dataset
 from lib.utils import mask_to_label
 
-from lib.config.dataset import LABEL_COLORS
-from lib.config.model import BATCH_SIZE
-from lib.config.session import DEVICE
+from lib.config import BATCH_SIZES, CLASS_COLORS, DEVICE
+
+__all__ = ["run"]
 
 
-def run(image, model):
-    image_path = image
-    model_path = Path(model)
+def run(input_path, model_path, output_path):
+    # Create path variables
+    image_path = Path(input_path)
+    model_path = Path(model_path)
+    output_path = Path(output_path)
 
     # Load model
-    model = torch.load(model_path.as_posix())
+    model = torch.load(str(model_path))
 
-    # Set image loader
-    image_test_case = TestCase(image_path)
-    image_loader = DataLoader(image_test_case, batch_size=BATCH_SIZE * 4, shuffle=False)
+    # Set data loader
+    test_ds = Dataset(filepath=image_path)
+    test_dl = DataLoader(test_ds, batch_size=BATCH_SIZES["test"], shuffle=False)
 
     # Predict
     prediction = None
     with torch.no_grad():
+        # Load in batches of multiple tiles
         for tiles in tqdm(
-            image_loader,
+            test_dl,
             desc="test",
             bar_format="{l_bar}{bar}|{n:4d}/{total:4d} [{elapsed} <{remaining}]",
             unit="batch",
         ):
             tiles = tiles.to(DEVICE)
-            pred_label = mask_to_label(model(tiles), LABEL_COLORS)
+            pred_label = mask_to_label(model(tiles), CLASS_COLORS)
 
+            # Concatenate prediction with previous bath, to form contiguous tiles
             if prediction is None:
                 prediction = pred_label.cpu()
             else:
                 prediction = torch.cat((prediction, pred_label.cpu()))
 
-    prediction = make_grid(prediction, nrow=image_test_case.ncols, padding=0)
+    # Create grid out of contiguous tiles
+    prediction = make_grid(prediction, nrow=test_ds.nrow, padding=0)
 
     # Write to file
-    run_id = model_path.stem[: -len("-model")]
-    output_path = Path("predictions") / f"{run_id}.png"
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    Image.fromarray(prediction.permute(1, 2, 0).numpy()).save(output_path.as_posix())
+    Image.fromarray(prediction.permute(1, 2, 0).numpy()).save(str(output_path))

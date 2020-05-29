@@ -1,6 +1,6 @@
-import torch
 import segmentation_models_pytorch as smp
-import json
+import shutil
+import torch
 
 from pathlib import Path
 from torch.utils.data import DataLoader
@@ -8,108 +8,110 @@ from torch.utils.tensorboard import SummaryWriter
 
 from lib.dataset import DroneDeploySegmentationDataset as Dataset
 
-from lib.config.model import (
-    MODELS,
-    ACTIVATION,
-    WEIGHTS,
-    METRICS,
-    BATCH_SIZE,
-    OPTIMIZER,
-    LEARNING_RATE,
+from lib.config import (
+    BATCH_SIZES,
+    CONFIG_PATH,
+    CRITERION,
+    CRITERION_ARGS,
+    DEVICE,
     EPOCHS,
+    METRIC,
+    METRIC_ARGS,
+    MODEL,
+    MODEL_ARGS,
+    OPTIMIZER,
+    OPTIMIZER_ARGS,
     SCHEDULER,
+    SCHEDULER_ARGS,
+    TIMESTAMP,
 )
-from lib.config.dataset import LABEL_COLORS
-from lib.config.session import DEVICE, TIMESTAMP
+
+__all__ = ["run"]
 
 
-def run(architecture, backbone, save_metric, model_path):
+def run(**kwargs):
+    """
+    Trains a model on the dataset.
+
+    Uses the following configuration settings:
+        - BATCH_SIZES: number of data points fed in a single optimization step
+        - CONFIG_PATH: path to configuration file
+        - CRITERION: loss function
+        - CRITERION_ARGS: arguments for criterion
+        - DEVICE: device upon which torch operations are run
+        - EPOCHS: number of iterations on the dataset
+        - METRIC: accuracy score
+        - METRIC_ARGS: arguments for metric
+        - MODEL: model architecture
+        - MODEL_ARGS: arguments for model
+        - OPTIMIZER: gradient descent and backpropagation optimizer
+        - OPTIMIZER_ARGS: arguments for optimizer
+        - SCHEDULER: learning rate scheduler
+        - SCHEDULER_ARGS: arguments for scheduler
+        - TIMESTAMP: time at run (unique identifier)
+    """
 
     # Create data loaders
     data_loaders = {
-        "train": DataLoader(Dataset("train"), batch_size=BATCH_SIZE, shuffle=True),
-        "valid": DataLoader(Dataset("valid"), batch_size=BATCH_SIZE, shuffle=False),
+        "train": DataLoader(
+            Dataset(split="train"), batch_size=BATCH_SIZES["train"], shuffle=True,
+        ),
+        "valid": DataLoader(
+            Dataset(split="valid"), batch_size=BATCH_SIZES["valid"], shuffle=False,
+        ),
     }
 
-    # Set model
-    model = None
-    run_id = None
+    # Assign model, criterion, optimizer, scheduler and metrics
+    model = MODEL(**MODEL_ARGS)
+    criterion = CRITERION(**CRITERION_ARGS)
+    optimizer = OPTIMIZER(params=model.parameters(), **OPTIMIZER_ARGS)
+    scheduler = SCHEDULER(optimizer=optimizer, **SCHEDULER_ARGS)
+    metric = METRIC(**METRIC_ARGS)
 
-    if model_path is None:
-        model = MODELS.get(architecture)(
-            encoder_name=backbone,
-            encoder_weights=WEIGHTS,
-            classes=len(LABEL_COLORS),
-            activation=ACTIVATION,
-        )
-        run_id = f"{TIMESTAMP}-{architecture}-{backbone}"
-    else:
-        run_id = model_path.stem[: -len("-model")]
-        model = torch.load(model_path)
-
-    # Setup custom logging
-    log_data = {}
-    log_file = Path("logs") / f"{run_id}.json"
-    log_file.parent.mkdir(parents=True, exist_ok=True)
-    start_epoch = 0
-    if log_file.exists():
-        with open(log_file.as_posix(), "r") as fd:
-            log_data = json.load(fd)
-            start_epoch = log_data["epoch"]
-    else:
-        log_data = {
-            "architecture": architecture,
-            "backbone": backbone,
-            "save_metric": save_metric,
-            "batch_size": BATCH_SIZE,
-        }
-
-    # Set loss and optimizer
-    loss = smp.utils.losses.DiceLoss()
-    optimizer = OPTIMIZER(params=model.parameters(), lr=LEARNING_RATE)
-    scheduler = SCHEDULER(optimizer=optimizer, epochs=EPOCHS)
-
-    # Set train and valid epoch execution
+    # Create train and valid epoch executions
     execution = {
         "train": smp.utils.train.TrainEpoch(
             model,
-            loss=loss,
-            metrics=METRICS,
+            loss=criterion,
+            metrics=[metric],
             optimizer=optimizer,
             device=DEVICE,
             verbose=True,
         ),
         "valid": smp.utils.train.ValidEpoch(
-            model, loss=loss, metrics=METRICS, device=DEVICE, verbose=True,
+            model, loss=criterion, metrics=[metric], device=DEVICE, verbose=True,
         ),
     }
 
-    # Set up logging with TensorBoard
-    run_dir = Path("runs") / run_id
+    # Create run directory
+    run_dir = Path("runs") / TIMESTAMP
     run_dir.mkdir(parents=True, exist_ok=True)
-    writer = SummaryWriter(run_dir.as_posix())
+
+    # Copy current configuration settings
+    shutil.copy(str(CONFIG_PATH), str(run_dir / "config.yml"))
+
+    # Setup TensorBoard
+    writer = SummaryWriter(str(run_dir))
 
     # Iterate over epochs
     best_score = 0
-    for epoch in range(start_epoch, EPOCHS):
+    for epoch in range(EPOCHS):
         print(f"Epoch: {epoch+1}")
 
+        # Iterate over phases
         for phase in ["train", "valid"]:
+            # Evaluate dataset
             logs = execution[phase].run(data_loaders[phase])
 
+            # Write to TensorBoard
             for scalar in logs:
                 writer.add_scalar(f"{phase} {scalar}", logs[scalar], epoch + 1)
 
             # Save the model if it is the best one so far, based on the validation score
-            score = logs[save_metric]
+            score = logs[metric.__name__]
             if phase == "valid" and best_score < score:
                 best_score = score
-                model_path = Path("weights") / f"{run_id}-model.pth"
-                model_path.parent.mkdir(parents=True, exist_ok=True)
-                torch.save(model, model_path)
+                torch.save(model, str(run_dir / "model.pth"))
 
-                log_data["epoch"] = epoch
-                with open(log_file.as_posix(), "w") as fd:
-                    json.dump(log_data, fd, indent=2)
-
+        # Notify scheduler every epoch
         scheduler.step()
