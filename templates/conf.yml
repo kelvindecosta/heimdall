@@ -1,0 +1,126 @@
+dataset:
+  classes:
+    - name: building
+      color: [230, 25, 75]
+    - name: clutter
+      color: [145, 30, 180]
+    - name: vegetation
+      color: [60, 180, 75]
+    - name: water
+      color: [245, 130, 48]
+    - name: ground
+      color: [255, 255, 255]
+    - name: car
+      color: [0, 130, 200]
+    - name: ignore
+      color: [255, 0, 255]
+
+  choice: sample
+
+  urls:
+    sample: https://drive.google.com/uc?id=1cuPhLxLt_xnA9ovU8KJFDpWfONPzlpA1
+    standard: https://drive.google.com/uc?id=1cuPhLxLt_xnA9ovU8KJFDpWfONPzlpA1
+
+  size: 224
+
+  transformations:
+    augmentation:
+      name: Compose
+      args:
+        transforms:
+          - name: RandomRotate90
+            args: {}
+          - name: Flip
+            args: {}
+          - name: Transpose
+            args: {}
+          - name: OneOf
+            args:
+              transforms:
+                - name: IAAAdditiveGaussianNoise
+                  args: {}
+                - name: GaussNoise
+                  args: {}
+              p: 0.2
+          - name: ShiftScaleRotate
+            args:
+              shift_limit: 0.0625
+              scale_limit: 0.2
+              rotate_limit: 45
+              p: 0.2
+          - name: OneOf
+            args:
+              transforms:
+                - name: OpticalDistortion
+                  args:
+                    p: 0.3
+                - name: GridDistortion
+                  args:
+                    p: 0.1
+                - name: IAAPiecewiseAffine
+                  args:
+                    p: 0.3
+              p: 0.2
+          - name: OneOf
+            args:
+              transforms:
+                - name: CLAHE
+                  args:
+                    clip_limit: 2
+                - name: IAASharpen
+                  args: {}
+                - name: IAAEmboss
+                  args: {}
+                - name: RandomBrightnessContrast
+                  args: {}
+              p: 0.3
+          - name: HueSaturationValue
+            args:
+              p: 0.3
+        p: 0.5
+
+    preprocessing:
+      name: Compose
+      args:
+        transforms:
+          - name: ToTensor
+            args: {}
+          - name: Normalize
+            args:
+              mean: [0.485, 0.456, 0.406]
+              std: [0.229, 0.224, 0.225]
+
+model:
+  architecture:
+    name: Unet
+    args:
+      encoder_name: resnet34
+      encoder_weights: imagenet
+      classes: 6
+      activation: softmax2d
+
+  metric:
+    name: IoU
+    args: {}
+
+  criterion:
+    name: DiceLoss
+    args: {}
+
+  optimizer:
+    name: Adam
+    args:
+      lr: 0.0001
+
+  scheduler:
+    name: StepLR
+    args:
+      step_size: 10
+      gamma: 0.1
+
+  batch-sizes:
+    train: 4
+    valid: 8
+    test: 16
+
+  epochs: 40
