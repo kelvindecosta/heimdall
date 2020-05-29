@@ -1,19 +1,21 @@
-import os
+import gdown
+import tarfile
 
 from pathlib import Path
 
-from lib.config.dataset import DATASET_CHOICE, URLS
+from lib.config import DATASET_CHOICE, DATASET_URL
+
+__all__ = ["run"]
 
 
 def run(**kwargs):
     """
-    Downloads & extracts the Drone Deploy Segmentation Dataset.
-    """
+    Downloads the Drone Deploy Segmentation Dataset.
 
-    # Check if choice is valid
-    if DATASET_CHOICE not in URLS:
-        print(f"Invalid choice '{DATASET_CHOICE}'.")
-        exit(1)
+    Uses the following configuration settings:
+        - DATASET_CHOICE: dataset to be downloaded
+        - DATASET_URL: download url
+    """
 
     # Download the archive file, if it isn't downloaded already
     filename = Path(f"downloads/{DATASET_CHOICE}.tar.gz")
@@ -21,22 +23,21 @@ def run(**kwargs):
 
     if filename.exists():
         print(
-            f"Archive file of dataset '{DATASET_CHOICE}' already exists ('{filename.as_posix()}')."
+            f"Archive file of dataset '{DATASET_CHOICE}' already exists ('{str(filename)}')."
         )
     else:
         print(f"Downloading archive file of dataset '{DATASET_CHOICE}'")
-        os.system(f"curl '{URLS[DATASET_CHOICE]}' -o {filename.as_posix()}")
+        gdown.download(DATASET_URL, str(filename), quiet=False)
 
     # Extract the archive file, if it isn't extracted already
     dataset_directory = Path(f"data/{DATASET_CHOICE}")
 
     if dataset_directory.exists():
         print(
-            f"Extracted dataset '{DATASET_CHOICE}' already exists ('{dataset_directory.as_posix()}')."
+            f"Extracted dataset '{DATASET_CHOICE}' already exists ('{str(dataset_directory)}')."
         )
     else:
         print(f"Extracting dataset '{DATASET_CHOICE}'...")
         dataset_directory.mkdir(parents=True, exist_ok=True)
-        os.system(
-            f"tar -xf {filename.as_posix()} -C {dataset_directory.as_posix()} --strip-components 1"
-        )
+        with tarfile.open(str(filename), "r:gz") as tar:
+            tar.extractall(str(dataset_directory.parent))
