@@ -1,5 +1,9 @@
 torch
 torchvision
+segmentation-models-pytorch
 pillow
 numpy
+albumentations
+pyyaml
+gdown
 tqdm
