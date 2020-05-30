@@ -19,7 +19,7 @@ dataset:
 
   urls:
     sample: https://drive.google.com/uc?id=1cuPhLxLt_xnA9ovU8KJFDpWfONPzlpA1
-    standard: https://drive.google.com/uc?id=1cuPhLxLt_xnA9ovU8KJFDpWfONPzlpA1
+    standard: https://drive.google.com/uc?id=1qRE1tnXjSmQCJhRrRDaa3XO75Jp9bKjZ
 
   size: 224
 
