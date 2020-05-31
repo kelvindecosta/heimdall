@@ -1,6 +1,8 @@
 # Heimdall
 
 <p align=center>
+  <img src="assets/logo.webp" height="200px"/>
+  <br>
   <span>A PyTorch pipeline for <em>semantic segmentation</em> on orthographic drone imagery.</span>
   <br>
   <a target="_blank" href="https://www.python.org/downloads/" title="Python version"><img src="https://img.shields.io/badge/python-%3E=_3.6-green.svg"></a>
