@@ -15,6 +15,20 @@ __all__ = ["run"]
 
 
 def run(input_path, model_path, output_path):
+    """
+    Predicts the segmentation masks for an input image.
+
+    Arguments:
+        input_path {str} -- path to input image
+        model_path {str} -- path to model file
+        output_path {str} -- path to output image
+
+    Uses the following configuration settings:
+        - BATCH_SIZES: number of data points fed in a single optimization step
+        - CLASS_COLORS: RGB colors for each class; used for creating label from mask
+        - DEVICE: device upon which torch operations are run
+    """
+
     # Create path variables
     image_path = Path(input_path)
     model_path = Path(model_path)
